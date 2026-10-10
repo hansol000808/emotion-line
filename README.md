@@ -2,9 +2,11 @@
 
 **Draw Your Emotion — 2026 Graduation Exhibition**
 
+**[전시 체험하기 →](https://hansol000808.github.io/emotion-line/emotion_line.html)**
+
 마우스나 터치로 그린 선을 도형으로 인식하고, 그 도형에 연결된 감정을 색·빛·문구·소리로 표현하는 웹 기반 인터랙티브 전시 프로젝트입니다. 관람객이 그리는 원, 하트, 삼각형, 위로 쓸기, X자가 서로 다른 감정의 세계로 이어집니다.
 
-- 저장소: [hansol000808/cau-gex2026](https://github.com/hansol000808/cau-gex2026)
+- 저장소: [hansol000808/emotion-line](https://github.com/hansol000808/emotion-line)
 - 시작 파일: `emotion_line.html`
 - 구현: HTML, CSS, JavaScript, Canvas 2D, Web Audio API
 
@@ -52,8 +54,8 @@
 ### 1. 저장소 내려받기
 
 ```sh
-git clone https://github.com/hansol000808/cau-gex2026.git
-cd cau-gex2026
+git clone https://github.com/hansol000808/emotion-line.git
+cd emotion-line
 ```
 
 GitHub의 **Code → Download ZIP**으로 내려받아 압축을 풀어도 됩니다.
@@ -97,7 +99,7 @@ python3 -m http.server 8000 --bind 127.0.0.1
 ## 파일 구조
 
 ```text
-cau-gex2026/
+emotion-line/
 ├── README.md
 └── emotion_line.html       # 화면, 스타일, 입력·인식·렌더링·사운드 구현
 ```
