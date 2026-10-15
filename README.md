@@ -4,7 +4,7 @@
 
 **[웹 체험하기 →](https://hansol000808.github.io/emotion-line/emotion_line.html)**
 
-마우스나 터치로 그린 선을 도형으로 인식하고, 그 도형에 연결된 감정을 색·빛·문구·소리로 표현하는 드로잉 기반 인터랙티브 웹입니다. 사용자이 그리는 원, 하트, 삼각형, 위로 쓸기, X자가 서로 다른 감정의 세계로 이어집니다.
+마우스나 터치로 그린 선을 도형으로 인식하고, 그 도형에 연결된 감정을 색·빛·문구·소리로 표현하는 드로잉 기반 인터랙티브 웹입니다. 사용자가 그리는 원, 하트, 삼각형, 위로 쓸기, X자가 서로 다른 감정의 세계로 이어집니다.
 
 - 저장소: [hansol000808/emotion-line](https://github.com/hansol000808/emotion-line)
 - 시작 파일: `emotion_line.html`
@@ -109,7 +109,7 @@ emotion-line/
 
 ## 인식 로직 검증
 
-Node.js 18 이상에서 추가 패키지 설치 없이 실행합니다.
+Node.js 18.1 이상에서 추가 패키지 설치 없이 실행합니다.
 
 ```sh
 node --test tests/gesture-recognition.test.cjs
@@ -137,6 +137,8 @@ node --test tests/gesture-recognition.test.cjs
 | `NOTE_FREQ` | 음 이름을 주파수로 변환하는 테이블 |
 | `startDraw()` / `moveDraw()` / `endDraw()` | 획의 좌표 수집, 선 그리기와 판별 요청 |
 | `recognizeGesture()` | 닫힘 여부, 가로세로 비율, 직선성, 반지름 분산과 모서리 등을 이용한 판별 |
+| `resampleGesture()` | 하트 판별용 좌표를 경로 길이에 따라 일정 간격으로 재배치 |
+| `isHeartGesture()` | 상단 중앙 홈, 양쪽 봉우리와 중앙 하단 끝의 형태를 검사해 하트 판별 |
 | `checkCrossFromRecent()` | 최근 두 대각선의 시간 간격, 교차와 방향 관계로 X자 판별 |
 | `enterWorld()` | 현재 감정과 화면 연출 변경 |
 | `playDrawSound()` / `playTransitionSfx()` | 그리기·전환 효과음 합성 |
@@ -158,6 +160,7 @@ node --test tests/gesture-recognition.test.cjs
 | 전환 효과음 | `WORLDS`의 `freq`, `waveform` 및 `playTransitionSfx()` |
 | 멜로디와 속도 | `WORLDS`의 `melody`, `melodyTempo` |
 | 도형 판별 조건 | `recognizeGesture()`, `checkCrossFromRecent()` |
+| 하트 형태 검사와 좌표 재배치 | `isHeartGesture()`, `resampleGesture()` |
 | 파티클 움직임 | `spawnParticle()`, `spawnBurst()`, `updateParticles()` |
 | 화면 배치와 글꼴 | `<style>` 블록 |
 
