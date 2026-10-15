@@ -170,6 +170,44 @@ function enterWorld(key){
   const fb=document.getElementById('detect-feedback');if(w.name){fb.textContent=`${w.name} 감지됨`;fb.classList.add('show');setTimeout(()=>fb.classList.remove('show'),2500)}
 }
 
+// Sample a closed outline by distance so drawing speed does not weight heart features.
+// Keep the original points for the existing circle, triangle and open-stroke rules.
+function resampleGesture(pts,count=96){
+  const path=[pts[0]],lengths=[0];
+  for(let i=1;i<=pts.length;i++){
+    const p=pts[i%pts.length],prev=path[path.length-1];
+    const length=Math.hypot(p.x-prev.x,p.y-prev.y);
+    if(length>0){path.push(p);lengths.push(lengths[lengths.length-1]+length)}}
+  const total=lengths[lengths.length-1];
+  if(!total)return[];
+  const samples=[];let segment=1;
+  for(let i=0;i<count;i++){
+    const target=total*i/count;
+    while(segment<lengths.length-1&&lengths[segment]<target)segment++;
+    const a=path[segment-1],b=path[segment];
+    const t=(target-lengths[segment-1])/(lengths[segment]-lengths[segment-1]);
+    samples.push({x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t})}
+  return samples}
+
+function isHeartGesture(pts,minX,minY,w,h){
+  if(w<=0||h<=0||h/w<=.6||h/w>=1.6)return false;
+  const outline=resampleGesture(pts).map(p=>({x:(p.x-minX)/w,y:(p.y-minY)/h}));
+  if(!outline.length)return false;
+  // A heart tapers to a centered lower tip, rather than a broad lower edge.
+  const bottom=outline.filter(p=>p.y>.85);
+  if(!bottom.length)return false;
+  const left=Math.min(...bottom.map(p=>p.x)),right=Math.max(...bottom.map(p=>p.x));
+  if(right-left>.5||Math.abs((left+right)/2-.5)>.2)return false;
+  // The upper central notch must sit below a raised lobe on BOTH sides.
+  // Cyclic neighbours make this independent of the start point and direction.
+  const step=Math.round(outline.length/12);
+  return outline.some((p,i)=>{
+    if(p.x<.25||p.x>.75||p.y>.5)return false;
+    const a=outline[(i-step+outline.length)%outline.length];
+    const b=outline[(i+step)%outline.length];
+    const l=a.x<b.x?a:b,r=a.x<b.x?b:a;
+    return l.x<p.x-.07&&r.x>p.x+.07&&p.y-l.y>.05&&p.y-r.y>.05})}
+
 function recognizeGesture(pts){
   if(pts.length<10)return null;
   const xs=pts.map(p=>p.x),ys=pts.map(p=>p.y);
@@ -184,21 +222,15 @@ function recognizeGesture(pts){
   // 1. 위로쓸기
   if(pts.length>6&&!isClosed){const dy=first.y-last.y;if(dy>80&&h>w*2&&straightness>.7&&h>100)return'swipe'}
 
-  // 2. 원
+  // 2. 하트: require its notch and tapered tip before the broader circle rule.
+  if(isClosed&&pts.length>25&&isHeartGesture(pts,minX,minY,w,h))return'heart';
+
+  // 3. 원
   if(isClosed&&pts.length>20){
     const avgR=pts.reduce((a,p)=>a+Math.hypot(p.x-cx,p.y-cy),0)/pts.length;
     const variance=pts.reduce((a,p)=>a+Math.pow(Math.hypot(p.x-cx,p.y-cy)-avgR,2),0)/pts.length;
     const circularity=1-(Math.sqrt(variance)/avgR);const aspect=Math.min(w,h)/Math.max(w,h);
     if(circularity>.72&&aspect>.55)return'circle'}
-
-  // 3. 하트
-  if(isClosed&&pts.length>25){
-    const midY=cy;const topPts=pts.filter(p=>p.y<midY);const botPts=pts.filter(p=>p.y>=midY);
-    if(topPts.length>8&&botPts.length>8){
-      const topW=Math.max(...topPts.map(p=>p.x))-Math.min(...topPts.map(p=>p.x));
-      const botMinY=Math.max(...botPts.map(p=>p.y));const botMinPt=botPts.find(p=>p.y===botMinY);
-      const botCenterX=botMinPt?botMinPt.x:cx;const botOffset=Math.abs(botCenterX-cx)/w;const heightRatio=h/w;
-      if(topW/w>.55&&botOffset<.35&&heightRatio>.6&&heightRatio<1.6)return'heart'}}
 
   // 4. 삼각형
   if(isClosed&&pts.length>15&&w>40&&h>40){
